@@ -10,7 +10,7 @@ This repository contains code used for computing k-core signatures in the articl
       Title = {Implementation of the moving window method for the maximum $k$-core signature problem.},
       Year = {2020}}
       
-# Compilaton and execution in a Linux environment
+# Compilaton and execution in Linux environment
 1. Download or clone the repository. 
 2. From terminal, go to the repository. 
 3. Type "make" and hit enter to compile. 
