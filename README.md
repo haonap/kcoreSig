@@ -12,7 +12,7 @@ This repository contains code used for computing k-core signatures in the articl
       
 # Compilaton and execution in a Linux environment
 1. Download or clone the repository. 
-2. From terminal, go to repository. 
+2. From terminal, go to the repository. 
 3. Type "make" and hit enter to compile. 
 4. Open instance.txt file, which contains input information. There are four entries in this file: instance name(directory copy one from the "graphSequences" folder), tau, k, method(1 for GSIP-F2, 2 for MW). With these settings, it is going to compute a tau-persistent k-core signature of the instance. 
 5. In terminal, type "./main" and hit enter to execute. 
