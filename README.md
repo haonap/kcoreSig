@@ -1,5 +1,5 @@
 # Code for computing k-core signatures
-This repository contains code used for computing k-core signatures in the article "Graph Signatures: Identification and Optimization" which has been submitted to European Journal of Operational Research. If you wish to use or cite this code, please cite:
+This repository contains C++ code used for computing k-core signatures in the article "Graph Signatures: Identification and Optimization" which has been submitted to European Journal of Operational Research. If you wish to use or cite this code, please cite:
         
     @misc{MWkCORE-GithubRepo,
       Author = {Hao Pan and Balabhaskar Balasundaram and Juan S. Borrero},
