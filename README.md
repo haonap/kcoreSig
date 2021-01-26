@@ -1,14 +1,12 @@
 # Code for computing k-core signatures
 This repository contains C++ code used for computing k-core signatures in the article "Graph Signatures: Identification and Optimization" which has been submitted to European Journal of Operational Research. If you wish to use or cite this code, please cite:
         
-    @misc{MWkCORE-GithubRepo,
-      Author = {Hao Pan and Balabhaskar Balasundaram and Juan S. Borrero},
-      Date-Added = {2020-10-15 17:39:38 -0500},
-      Date-Modified = {2020-10-15 17:41:00 -0500},
-      Howpublished = {Codes and instances online at: \url{https://github.com/haonap/kcoreSig}},
-      Month = {October },
-      Title = {Implementation of the moving window method for the maximum $k$-core signature problem.},
-      Year = {2020}}
+        @article{BBJBHP2021g-sign,
+                author = {Balabhaskar Balasundaram and Juan S. Borrero and Hao Pan},
+                journal = {European Journal of Operational Research},
+                note = {Under Review},
+                title = {Graph Signatures: {I}dentification and Optimization},
+                year = {2021}}
       
 # Compilaton and execution in Linux environment
 1. Download or clone the repository to your machine. 
