@@ -8,7 +8,7 @@ This repository contains C++ code used for computing k-core signatures in the ar
                 title = {Graph Signatures: {I}dentification and Optimization},
                 year = {2021}}
       
-# Compilaton and execution in Linux environment
+# Compilation and execution in Linux environment
 1. Download or clone the repository to your machine. 
 2. From terminal, go to the repository. 
 3. Type "make" and hit enter to compile. 
