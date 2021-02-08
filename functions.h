@@ -35,9 +35,9 @@ using namespace std;
 
 void ReadIn(string);
 void GSIP_F2(int, int);
-void MW(int, int);
+void MW(int, int, int);
 vector<int> GetPersistentKCoreWindow(int, int, int);
-void CountEdges(); //count number of edges in universal graph
+vector<int> GetPersistentKCoreWindowGeneric(int, int, int);
 
 string itos_c(int);
 int stoi_c(string);

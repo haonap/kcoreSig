@@ -37,6 +37,7 @@ graph::graph(string nameG){
 }
 
 
+// get k-core of a graph
 void graph::GetKCore(int k){
     queue<int> Q;
     vector<int> F, D;
@@ -80,6 +81,7 @@ void graph::GetKCore(int k){
 }
 
 
+// check if u is adjacent to v
 bool graph::IsAdj(int u, int v){
     if(binary_search(nodeList[u].neighbors.begin(), nodeList[u].neighbors.end(), v)){
         return 1;

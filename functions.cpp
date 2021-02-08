@@ -6,7 +6,7 @@ vector<graph> graphSeq;
 vector<string> graphs;
 
 
-// functions
+// read in a graph sequence
 void ReadIn(string name){
     double st = get_wall_time();
     cout << "\nRead in..." << endl;
@@ -32,6 +32,7 @@ void ReadIn(string name){
 }
 
 
+// solve for a k-core signature using GSIP-F2
 void GSIP_F2(int tau, int k){
     double st = get_wall_time();
     int T = (int)graphSeq.size();
@@ -186,10 +187,18 @@ void GSIP_F2(int tau, int k){
 }
 
 
-void MW(int tau, int k){
+/* solve for a k-core signature using a MW method based on input parameter ``method"
+ * if method = 2, use MW-CORE
+ * if method = 3, use MW-F2 */
+void MW(int tau, int k, int method){
     double st = get_wall_time();
     int T = (int)graphSeq.size();
-    cout << "\nMW..." << endl;
+    if(method == 2){
+        cout << "\nMW..." << endl;
+    }else if(method == 3){
+        cout << "\nMW Generic..." << endl;
+    }
+
     cout << "Find " << tau << "-persistent " << k << "-core " << "T = " << graphs.size() << ", tau = " << tau << "..." << endl;
     vector<int> bestKCore;
     int bestWindow = 0;
@@ -200,7 +209,12 @@ void MW(int tau, int k){
                 graphSeq[j].nodeList[v].degree = (int)graphSeq[j].nodeList[v].neighbors.size();
             }
         }
-        vector<int> pKCore = GetPersistentKCoreWindow(i, tau, k);
+        vector<int> pKCore;
+        if(method == 2){
+            pKCore = GetPersistentKCoreWindow(i, tau, k);
+        }else if(method == 3){
+            pKCore = GetPersistentKCoreWindowGeneric(i, tau, k);
+        }
         cout << "Window " << i+1 << ": " << (int)pKCore.size() << endl;
         if(pKCore.size() > bestKCore.size()){
             bestKCore = pKCore;
@@ -230,6 +244,7 @@ void MW(int tau, int k){
 }
 
 
+// for solving each window problem when using MW-CORE
 vector<int> GetPersistentKCoreWindow(int i, int tau, int k){
     vector<int> pstKCore; // persistent kCore
     queue<int> Q;
@@ -281,37 +296,110 @@ vector<int> GetPersistentKCoreWindow(int i, int tau, int k){
 }
 
 
-void CountEdges(){
+// for solving each window problem when using MW-F2
+vector<int> GetPersistentKCoreWindowGeneric(int windowHead, int tau, int k) {
+    vector<int> pstKCore;
+    //int upperBound = graphSeq[windowHead].n + 1;
 
-    int edgeCount = 0;
-    graph pGraph("universal");
-    pGraph.n = graphSeq[0].n;
+    GRBEnv *env = 0;
+    GRBVar *xvar = 0;
 
-    for(int i = 0; i < pGraph.n; i++){
-        node pNode(i);
-        pGraph.nodeList.push_back(pNode);
-    }
+    try {
+        env = new GRBEnv();
+        GRBModel model =GRBModel(*env);
 
-    for(int t = 0; t < graphSeq.size(); t++){
-        graph* graphP = &graphSeq[t];
-        for(int i = 0; i < graphP->n; i++){
-            for(int j = 0; j < graphP->nodeList[i].neighbors.size(); j++) {
-                int pNeighbor = graphP->nodeList[i].neighbors[j];
-                if (i < pNeighbor) {
-                    if (find(pGraph.nodeList[i].neighbors.begin(), pGraph.nodeList[i].neighbors.end(), pNeighbor) ==
-                        pGraph.nodeList[i].neighbors.end()) {
-                        edgeCount++;
-                        pGraph.nodeList[i].neighbors.push_back(pNeighbor);
-                        pGraph.nodeList[pNeighbor].neighbors.push_back(i);
-                    }
+        // add variables
+        xvar = model.addVars(graphSeq[0].n, GRB_BINARY);
+        model.update();
+
+        // add objective functions
+        for(int i = 0; i < graphSeq[0].n; i++){
+            xvar[i].set(GRB_DoubleAttr_Obj, 1);
+        }
+        model.update();
+
+        // add constraints
+        for(int t = windowHead; t < windowHead + tau; t++){
+            for(int i = 0; i < graphSeq[t].n; i++){
+                GRBLinExpr expr = k*xvar[i];
+                for(int j = 0; j < graphSeq[t].nodeList[i].neighbors.size(); j++){
+                    expr -= xvar[graphSeq[t].nodeList[i].neighbors[j]];
+                }
+                model.addConstr(expr <= 0);
+            }
+        }
+
+        model.update();
+
+        // set Gurobi Parameters
+
+        //set feasibility vs optimality balance
+        model.set(GRB_IntParam_MIPFocus, 0);
+        //1-feasible sols quickly;2-prove optimality;3-focus on MIP bound; default is 0
+
+        //set threads; review guidance on Gurobi.com; 0-default;
+        model.set(GRB_IntParam_Threads, 0);
+
+        //set root node LPR solver
+        model.set(GRB_IntParam_Method, -1);
+        //-1=automatic, 0=primal simplex, 1=dual simplex, 2=barrier, 3=concurrent, 4=deterministic concurrent
+
+        //set BC node LPR solver
+        model.set(GRB_IntParam_NodeMethod, 1);
+        //0=primal simplex, 1=dual simplex, 2=barrier
+
+        //set global cut aggressiveness; over-ridden by individual cut settings
+        model.set(GRB_IntParam_Cuts, 0);
+        //0=no cuts;1=moderate;2=aggressive;3=very aggressive;-1=default
+
+        //set maximum time limit
+        model.set(GRB_DoubleParam_TimeLimit, 3600);
+
+        //set termination gap limit; as needed; default is 1e-4
+        model.set(GRB_DoubleParam_MIPGap, 0);
+
+        //set Gurobi log file name, if necessary; "" to switch off
+        model.set(GRB_StringParam_LogFile, "");
+
+        //set Gurobi screen display flag
+        model.set(GRB_IntParam_OutputFlag, 1);
+        //0=switch off; 1=default
+
+        // set Model Attributes
+
+        //set objective to maximize
+        model.set(GRB_IntAttr_ModelSense, -1);
+
+        //set model name
+        model.set(GRB_StringAttr_ModelName, "FindPersistentKCore");
+
+        //in case of exhausting memory
+        //model.getEnv().set(GRB_DoubleParam_NodefileStart,0.1);
+
+        //begin optimization
+        model.optimize();
+
+        // get results
+        if ((int) model.get(GRB_IntAttr_SolCount)) {
+            for (int i = 0; i < graphSeq[0].n; i++) {
+                if (xvar[i].get(GRB_DoubleAttr_X) > 0.5) {
+                    pstKCore.push_back(i);
                 }
             }
         }
+
+    } catch (GRBException e) {
+        cout << "Error code = " << e.getErrorCode() << endl;
+        cout << e.getMessage() << endl;
+    } catch (...) {
+        cout << "Exception during optimization" << endl;
     }
 
-    cout << "|E^0| = " << edgeCount << endl;
+    return pstKCore;
 }
 
+
+// integer to string
 string itos_c(int i){
     stringstream s;
     s << i;
@@ -319,6 +407,7 @@ string itos_c(int i){
 }
 
 
+// string to integer
 int stoi_c(string i){
     stringstream geek(i);
     int s=0;
@@ -327,6 +416,7 @@ int stoi_c(string i){
 }
 
 
+// string to double
 double stod_c(string i){
     stringstream geek(i);
     double s=0;
@@ -335,6 +425,7 @@ double stod_c(string i){
 }
 
 
+// double to string
 string dtos_c(double i){
     stringstream s;
     s << i;
@@ -342,21 +433,25 @@ string dtos_c(double i){
 }
 
 
+// create new directory
 void makeDir(string dirName){
     mkdir(dirName.c_str(), S_IRWXU);
 }
 
 
+// delete all files in a directory
 void emptyDir(string dirName){
     system(("rm -r " + dirName +"/*").c_str());
 }
 
 
+// go to a directory
 void goToDir(string dirName){
     chdir(dirName.c_str());
 }
 
 
+// get current directory
 string getDir() {
     char buff[FILENAME_MAX];
     GetCurrentDir( buff, FILENAME_MAX);
@@ -365,6 +460,7 @@ string getDir() {
 }
 
 
+// get wall time
 double get_wall_time(){
     struct timeval time;
     if(gettimeofday(&time, NULL)){
@@ -374,6 +470,7 @@ double get_wall_time(){
 }
 
 
+// get CPU time
 double get_cpu_time(){
     return (double)clock() / CLOCKS_PER_SEC;
 }
