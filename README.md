@@ -1,14 +1,17 @@
 # Code for computing k-core signatures
 This repository contains C++ code used for computing k-core signatures in the article "Graph Signatures: Identification and Optimization" which has been published in European Journal of Operational Research. If you wish to use or cite this code, please cite:
         
-        @article{BBJBHP2021g-sign,
+        @article{Hao2022GraphSign,
                 author = {Balabhaskar Balasundaram and Juan S. Borrero and Hao Pan},
                 journal = {European Journal of Operational Research},
-                month = {April},
-                note = {DOI: 10.1016/j.ejor.2021.03.051},
+                month = {February},
+                number = {3},
+                pages = {764--775},
                 title = {Graph Signatures: {I}dentification and Optimization},
-                year = {2021},
-                url = {https://doi.org/10.1016/j.ejor.2021.03.051}}
+                volume = {296},
+                year = {2022},
+                doi = {https://doi.org/10.1016/j.ejor.2021.03.051},
+        }
 
 # Understanding and using the code
 The code should be straightforward if you start to read from file main.cpp. Necessary comments have been added in the code for easiness of understanding. Descriptions are added at the top of each function in functions.cpp and classes.cpp. As stated previously, the code is used for computing k-core signatures. We present three methods for computing k-core signatures, GSIP-F2, MW-CORE, and MW-F2. 
